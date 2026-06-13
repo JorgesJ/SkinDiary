@@ -194,7 +194,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
   Widget _controls(bool hasGhost) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      padding: EdgeInsets.fromLTRB(
+          12, 16, 12, 16 + MediaQuery.of(context).padding.bottom),
       color: Colors.black54,
       child: Column(
         mainAxisSize: MainAxisSize.min,
