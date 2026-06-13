@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/body_zones.dart';
+import '../models/scan_record.dart';
 import '../services/storage_service.dart';
 import 'zone_detail_screen.dart';
 
