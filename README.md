@@ -1,83 +1,135 @@
-# 🧴 SkinDiary
+# SkinDiary
 
-Un diario sencillo para llevar el seguimiento del cuidado de tu piel. Registra cada día cómo
-notas tu piel, qué productos usaste, etiquetas y notas, e incluso una foto. SkinDiary te
-muestra un resumen con tu racha de registros y la evolución de tu estado.
+App movil (Flutter) para **documentar y comparar fotografias de tu piel** a lo
+largo del tiempo (lunares, manchas, pecas, etc.) organizadas por zona del cuerpo.
 
-Este es el **MVP**: una aplicación web autónoma que funciona 100% en el navegador, sin
-servidor ni dependencias externas. Los datos se guardan localmente en tu navegador
-(`localStorage`).
+> **Aviso:** uso **informativo**, sin validez medica. No diagnostica ni sustituye
+> a un profesional. Para un resultado verificado, acude a tu especialista.
 
-## ✨ Funcionalidades del MVP
+Un unico codigo para **Android e iOS**. Empezamos por Android (ya tienes Play
+Console); iOS se activa mas adelante con el mismo proyecto, sin reescribir nada.
 
-- **Crear, editar y eliminar** entradas diarias.
-- **Estado de la piel** con escala visual de 5 niveles (de 😣 a 😄).
-- **Productos** y **etiquetas** asociados a cada entrada.
-- **Notas** de texto libre.
-- **Foto opcional** por entrada (almacenada localmente como dataURL).
-- **Búsqueda** por notas, productos o etiquetas.
-- **Filtro** por estado de la piel.
-- **Resumen**: total de entradas, racha de días consecutivos, estado medio y último registro.
-- **Persistencia local** en `localStorage` (no se envía nada a ningún servidor).
-- **Diseño responsive** pensado para móvil y escritorio.
+---
 
-## 🚀 Cómo usarlo
+## Que hace (MVP - Fase 1)
 
-No requiere instalación ni `build`. Solo necesitas abrir `index.html`.
+- Pantalla de **consentimiento** obligatoria al primer inicio (se guarda la aceptacion).
+- **Zonas del cuerpo** (brazo izq/der, antebrazos, espalda...) con su ultima foto.
+- **Captura con camara** + marco guia y **"fantasma"** de la foto anterior
+  superpuesto (con control de opacidad) para encuadrar igual cada vez.
+- **Almacenamiento local**: las fotos quedan en el dispositivo (no se suben a ningun sitio).
+- **Comparacion** de 2 fotos de la misma zona: lado a lado o con deslizador, con
+  el numero de dias transcurridos.
+- Nota opcional por foto y borrado de fotos.
 
-Opción rápida (doble clic):
+---
 
-- Abre `index.html` en tu navegador.
+## Requisitos
 
-Opción recomendada (servidor estático local, evita restricciones de algunos navegadores):
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.4 o superior).
+- Android Studio con los plugins **Flutter** y **Dart** instalados.
+- Un dispositivo Android real (recomendado para probar la camara).
 
-```bash
-# Con Python
-python3 -m http.server 8000
+---
 
-# o con Node
-npx serve .
+## Puesta en marcha (Android Studio)
+
+Este repositorio contiene la logica de la app (`lib/`) y el `pubspec.yaml`. Las
+carpetas de plataforma (`android/`, `ios/`) se generan en tu maquina con un comando.
+
+1. **Genera las carpetas de plataforma** (desde la raiz del proyecto):
+
+   ```bash
+   flutter create .
+   ```
+
+   Esto crea `android/`, `ios/`, etc. sin tocar el codigo de `lib/`.
+
+2. **Instala las dependencias:**
+
+   ```bash
+   flutter pub get
+   ```
+
+3. **Configura los permisos** (ver seccion siguiente).
+
+4. **Ejecuta en tu dispositivo:**
+
+   ```bash
+   flutter run
+   ```
+
+   O abre la carpeta en Android Studio y pulsa *Run*.
+
+---
+
+## Permisos de camara
+
+### Android
+
+Edita `android/app/src/main/AndroidManifest.xml` y anade dentro de `<manifest>`
+(antes de `<application>`):
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
 ```
 
-Luego visita `http://localhost:8000`.
+El plugin `camera` requiere `minSdkVersion 21`. En `android/app/build.gradle`
+(o `build.gradle.kts`), asegurate de:
 
-## 📁 Estructura del proyecto
-
-```
-SkinDiary/
-├── index.html         # Estructura de la app
-├── styles/
-│   └── main.css       # Estilos
-└── js/
-    ├── storage.js     # Capa de persistencia (localStorage) y modelo de datos
-    └── app.js         # Lógica de interfaz y orquestación
-```
-
-## 🧩 Modelo de datos
-
-Cada entrada del diario tiene esta forma:
-
-```js
-{
-  id: "uuid",
-  date: "2026-06-13",   // YYYY-MM-DD
-  condition: 4,          // 1..5 (estado de la piel)
-  products: ["Limpiador", "Niacinamida"],
-  tags: ["sol", "descanso"],
-  notes: "Piel más calmada hoy.",
-  photo: "data:image/...", // o null
-  createdAt: "ISO",
-  updatedAt: "ISO"
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+    }
 }
 ```
 
-## 🗺️ Próximos pasos (fuera del MVP)
+### iOS (cuando tengas un Mac)
 
-- Sincronización en la nube y cuentas de usuario.
-- Gráficas de evolución del estado de la piel.
-- Recordatorios de rutina.
-- Exportar / importar datos (JSON / CSV).
+En `ios/Runner/Info.plist` anade:
 
-## 📝 Licencia
+```xml
+<key>NSCameraUsageDescription</key>
+<string>La app usa la camara para fotografiar zonas de tu piel.</string>
+```
 
-MIT
+---
+
+## Estructura del codigo
+
+```
+lib/
+  main.dart                 # Arranque: camaras + BD + consentimiento
+  app_theme.dart            # Tema visual
+  data/body_zones.dart      # Zonas del cuerpo sugeridas
+  models/scan_record.dart   # Modelo de foto + resumen de zona
+  services/
+    storage_service.dart    # SQLite (metadatos) + ficheros (imagenes)
+    consent_service.dart    # Aceptacion del aviso
+  screens/
+    consent_screen.dart     # Aviso inicial
+    home_screen.dart        # Lista de zonas
+    zone_detail_screen.dart # Fotos de una zona + comparar
+    capture_screen.dart     # Camara + guia fantasma
+    photo_view_screen.dart  # Visor a pantalla completa
+    compare_screen.dart     # Comparacion (lado a lado / deslizador)
+  widgets/
+    camera_overlay.dart     # Marco guia sobre la camara
+```
+
+---
+
+## Privacidad
+
+Todas las imagenes y datos se guardan **solo en el dispositivo** (carpeta de
+documentos de la app + base de datos SQLite local). Nada se envia a internet.
+
+---
+
+## Siguientes fases (ideas)
+
+- **Fase 2:** recordatorios periodicos, exportar a PDF/zip para llevar al
+  dermatologo, etiquetas por foto, copia de seguridad cifrada.
+- **Fase 3:** deteccion/medicion automatica de lunares y resaltado de diferencias
+  entre sesiones (vision por computador).
