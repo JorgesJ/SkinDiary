@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Reglas de copia de seguridad (Android < 12). La app guarda los datos
+   del diario en el almacenamiento web del WebView (localStorage), incluido
+   en el backup completo de la app por defecto.
+-->
+<full-backup-content />
