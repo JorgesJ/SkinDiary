@@ -179,7 +179,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
         if (hasGhost && _showGhost)
           Opacity(
             opacity: _ghostOpacity,
-            child: Image.file(File(ghost), fit: BoxFit.cover),
+            child: Image.file(File(ghost!), fit: BoxFit.cover),
           ),
         const CameraOverlay(),
         Positioned(

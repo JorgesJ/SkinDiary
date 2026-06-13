@@ -113,7 +113,7 @@ class _Thumb extends StatelessWidget {
         width: 56,
         height: 56,
         child: exists
-            ? Image.file(File(path), fit: BoxFit.cover)
+            ? Image.file(File(path!), fit: BoxFit.cover)
             : Container(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: const Icon(Icons.image_outlined),
