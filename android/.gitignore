@@ -1,0 +1,23 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.cxx/
+
+# SDK location (específico de cada máquina, lo genera Android Studio)
+local.properties
+
+# Keystore / firma
+*.jks
+*.keystore
+
+# Assets web generados por la task copyWebAssets (fuente de verdad: raíz del repo)
+app/src/main/assets/web/
+
+# Logs
+*.log
