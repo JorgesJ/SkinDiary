@@ -35,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final String? zone = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (_) => const _ZonePickerSheet(),
     );
     if (zone == null || !mounted) return;
@@ -171,10 +172,9 @@ class _ZonePickerSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-                16, MediaQuery.of(context).viewPadding.top + 16, 16, 16),
-            child: const Text(
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
               'Elige una zona del cuerpo',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
