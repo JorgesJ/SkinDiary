@@ -13,8 +13,14 @@ import '../widgets/camera_overlay.dart';
 /// Captura una foto de la zona con marco guia y, opcionalmente, la foto
 /// anterior superpuesta ("fantasma") para alinear el mismo encuadre.
 class CaptureScreen extends StatefulWidget {
-  const CaptureScreen({super.key, required this.zone, this.ghostPath});
+  const CaptureScreen({
+    super.key,
+    required this.profileId,
+    required this.zone,
+    this.ghostPath,
+  });
 
+  final int profileId;
   final String zone;
   final String? ghostPath;
 
@@ -97,6 +103,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
       final String? note = await _askNote();
       await StorageService.instance.insertScan(
         ScanRecord(
+          profileId: widget.profileId,
           zone: widget.zone,
           filePath: permanentPath,
           createdAt: DateTime.now(),

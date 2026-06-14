@@ -4,20 +4,25 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/body_zones.dart';
+import '../models/profile.dart';
 import '../models/scan_record.dart';
 import '../services/storage_service.dart';
 import 'zone_detail_screen.dart';
 
-/// Pantalla principal: lista de zonas del cuerpo con su ultima foto.
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+/// Lista de zonas del cuerpo de un perfil concreto, con su ultima foto.
+class ZonesScreen extends StatefulWidget {
+  const ZonesScreen({super.key, required this.profile});
+
+  final Profile profile;
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<ZonesScreen> createState() => _ZonesScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _ZonesScreenState extends State<ZonesScreen> {
   late Future<List<ZoneSummary>> _future;
+
+  int get _profileId => widget.profile.id!;
 
   @override
   void initState() {
@@ -27,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _refresh() {
     setState(() {
-      _future = StorageService.instance.getZoneSummaries();
+      _future = StorageService.instance.getZoneSummaries(_profileId);
     });
   }
 
@@ -40,7 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (zone == null || !mounted) return;
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => ZoneDetailScreen(zone: zone)),
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            ZoneDetailScreen(profile: widget.profile, zone: zone),
+      ),
     );
     _refresh();
   }
@@ -48,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis zonas')),
+      appBar: AppBar(title: Text(widget.profile.name)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _pickZoneForNewScan,
         icon: const Icon(Icons.add_a_photo_outlined),
@@ -84,7 +92,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () async {
                       await Navigator.of(context).push(
                         MaterialPageRoute<void>(
-                          builder: (_) => ZoneDetailScreen(zone: z.zone),
+                          builder: (_) => ZoneDetailScreen(
+                              profile: widget.profile, zone: z.zone),
                         ),
                       );
                       _refresh();
@@ -141,12 +150,12 @@ class _EmptyState extends StatelessWidget {
             const Icon(Icons.photo_camera_back_outlined, size: 72),
             const SizedBox(height: 16),
             Text(
-              'Aun no tienes capturas',
+              'Aun no hay capturas',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             const Text(
-              'Crea tu primera captura eligiendo una zona del cuerpo. '
+              'Crea la primera captura eligiendo una zona del cuerpo. '
               'Con el tiempo podras comparar la evolucion.',
               textAlign: TextAlign.center,
             ),
