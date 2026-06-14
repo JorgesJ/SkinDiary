@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../app_theme.dart';
 import '../models/scan_record.dart';
 import '../services/storage_service.dart';
 
@@ -47,6 +48,7 @@ class PhotoViewScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
+        systemOverlayStyle: AppTheme.lightIconsOverlay,
         title: Text(scan.zone),
         actions: <Widget>[
           IconButton(

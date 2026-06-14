@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../app_theme.dart';
 import '../main.dart' show cameras;
 import '../models/scan_record.dart';
 import '../services/storage_service.dart';
@@ -147,6 +148,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
+        systemOverlayStyle: AppTheme.lightIconsOverlay,
         title: Text(widget.zone),
       ),
       body: _buildBody(),
