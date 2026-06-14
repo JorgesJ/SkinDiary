@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/consent_service.dart';
-import 'home_screen.dart';
+import 'profiles_screen.dart';
 
 /// Aviso obligatorio al primer inicio: la app es informativa, sin validez medica.
 class ConsentScreen extends StatefulWidget {
@@ -18,7 +18,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
     await ConsentService.setAccepted(true);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => const HomeScreen()),
+      MaterialPageRoute<void>(builder: (_) => const ProfilesScreen()),
     );
   }
 

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'screens/consent_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 import 'services/consent_service.dart';
 import 'services/storage_service.dart';
 
@@ -46,7 +46,7 @@ class SkinDiaryApp extends StatelessWidget {
       title: 'SkinDiary',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: consentAccepted ? const HomeScreen() : const ConsentScreen(),
+      home: consentAccepted ? const SplashScreen() : const ConsentScreen(),
     );
   }
 }

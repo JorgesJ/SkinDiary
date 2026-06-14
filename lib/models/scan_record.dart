@@ -2,6 +2,7 @@
 class ScanRecord {
   ScanRecord({
     this.id,
+    this.profileId,
     required this.zone,
     this.label,
     required this.filePath,
@@ -10,6 +11,7 @@ class ScanRecord {
   });
 
   final int? id;
+  final int? profileId;
   final String zone;
   final String? label;
   final String filePath;
@@ -19,6 +21,7 @@ class ScanRecord {
   Map<String, Object?> toMap() {
     return <String, Object?>{
       'id': id,
+      'profile_id': profileId,
       'zone': zone,
       'label': label,
       'file_path': filePath,
@@ -30,6 +33,7 @@ class ScanRecord {
   factory ScanRecord.fromMap(Map<String, Object?> map) {
     return ScanRecord(
       id: map['id'] as int?,
+      profileId: map['profile_id'] as int?,
       zone: map['zone'] as String,
       label: map['label'] as String?,
       filePath: map['file_path'] as String,

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../models/profile.dart';
 import '../models/scan_record.dart';
 import '../services/storage_service.dart';
 import 'capture_screen.dart';
@@ -13,8 +14,9 @@ import 'photo_view_screen.dart';
 /// Muestra todas las fotos de una zona y permite anadir o comparar 2 que elija
 /// el usuario.
 class ZoneDetailScreen extends StatefulWidget {
-  const ZoneDetailScreen({super.key, required this.zone});
+  const ZoneDetailScreen({super.key, required this.profile, required this.zone});
 
+  final Profile profile;
   final String zone;
 
   @override
@@ -26,6 +28,8 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   final Set<int> _selected = <int>{};
   bool _selectMode = false;
 
+  int get _profileId => widget.profile.id!;
+
   @override
   void initState() {
     super.initState();
@@ -34,7 +38,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
   void _refresh() {
     setState(() {
-      _future = StorageService.instance.getScansByZone(widget.zone);
+      _future = StorageService.instance.getScansByZone(_profileId, widget.zone);
     });
   }
 
@@ -57,7 +61,11 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
         existing.isNotEmpty ? existing.first.filePath : null;
     final bool? captured = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
-        builder: (_) => CaptureScreen(zone: widget.zone, ghostPath: ghostPath),
+        builder: (_) => CaptureScreen(
+          profileId: _profileId,
+          zone: widget.zone,
+          ghostPath: ghostPath,
+        ),
       ),
     );
     if (captured == true) _refresh();
@@ -77,7 +85,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
   Future<void> _openAnalysis() async {
     final List<ScanRecord> scans =
-        await StorageService.instance.getScansByZone(widget.zone);
+        await StorageService.instance.getScansByZone(_profileId, widget.zone);
     final List<ScanRecord> selected = scans
         .where((ScanRecord s) => _selected.contains(s.id))
         .toList();
@@ -91,7 +99,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
   Future<void> _openCompare() async {
     final List<ScanRecord> scans =
-        await StorageService.instance.getScansByZone(widget.zone);
+        await StorageService.instance.getScansByZone(_profileId, widget.zone);
     final List<ScanRecord> selected = scans
         .where((ScanRecord s) => _selected.contains(s.id))
         .toList()
