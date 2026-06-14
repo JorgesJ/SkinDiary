@@ -183,6 +183,28 @@ class _CaptureScreenState extends State<CaptureScreen> {
           ),
         const CameraOverlay(),
         Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            bottom: false,
+            child: Container(
+              margin: const EdgeInsets.all(12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Consejo: coloca un fondo liso y oscuro detras de la zona '
+                'para evitar marcas falsas en el analisis.',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
           left: 0,
           right: 0,
           bottom: 0,

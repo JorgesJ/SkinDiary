@@ -39,7 +39,8 @@ class _CompareScreenState extends State<CompareScreen> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => AnalysisScreen(a: widget.a, b: widget.b),
+                  builder: (_) =>
+                      AnalysisScreen(scans: <ScanRecord>[widget.a, widget.b]),
                 ),
               );
             },

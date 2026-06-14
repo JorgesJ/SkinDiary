@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'screens/consent_screen.dart';
@@ -12,6 +13,13 @@ List<CameraDescription> cameras = <CameraDescription>[];
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Barra de navegacion del sistema visible: fondo claro con iconos oscuros.
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.white,
+    systemNavigationBarIconBrightness: Brightness.dark,
+    systemNavigationBarDividerColor: Color(0xFFE0E0E0),
+  ));
 
   try {
     cameras = await availableCameras();
