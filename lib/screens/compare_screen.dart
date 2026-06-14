@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/scan_record.dart';
+import 'analysis_screen.dart';
 
 /// Compara dos fotos de la misma zona: lado a lado o con un deslizador.
 class CompareScreen extends StatefulWidget {
@@ -32,6 +33,17 @@ class _CompareScreenState extends State<CompareScreen> {
       appBar: AppBar(
         title: const Text('Comparar'),
         actions: <Widget>[
+          IconButton(
+            tooltip: 'Analizar cambios',
+            icon: const Icon(Icons.biotech_outlined),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => AnalysisScreen(a: widget.a, b: widget.b),
+                ),
+              );
+            },
+          ),
           IconButton(
             tooltip: _sliderMode ? 'Lado a lado' : 'Deslizador',
             icon: Icon(_sliderMode ? Icons.view_column : Icons.compare),
