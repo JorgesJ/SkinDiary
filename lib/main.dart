@@ -14,11 +14,12 @@ List<CameraDescription> cameras = <CameraDescription>[];
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Barra de navegacion del sistema visible: fondo claro con iconos oscuros.
+  // Barra de navegacion del sistema visible: iconos oscuros (pantallas claras).
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    systemNavigationBarColor: Colors.white,
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarColor: Colors.transparent,
     systemNavigationBarIconBrightness: Brightness.dark,
-    systemNavigationBarDividerColor: Color(0xFFE0E0E0),
   ));
 
   try {
