@@ -7,6 +7,7 @@ import '../models/scan_record.dart';
 import '../services/storage_service.dart';
 import 'capture_screen.dart';
 import 'compare_screen.dart';
+import 'analysis_screen.dart';
 import 'photo_view_screen.dart';
 
 /// Muestra todas las fotos de una zona y permite anadir o comparar 2 que elija
@@ -69,12 +70,23 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       if (_selected.contains(id)) {
         _selected.remove(id);
       } else {
-        if (_selected.length >= 2) {
-          _selected.remove(_selected.first);
-        }
         _selected.add(id);
       }
     });
+  }
+
+  Future<void> _openAnalysis() async {
+    final List<ScanRecord> scans =
+        await StorageService.instance.getScansByZone(widget.zone);
+    final List<ScanRecord> selected = scans
+        .where((ScanRecord s) => _selected.contains(s.id))
+        .toList();
+    if (selected.length < 2 || !mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AnalysisScreen(scans: selected),
+      ),
+    );
   }
 
   Future<void> _openCompare() async {
@@ -151,14 +163,27 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
           ? SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: FilledButton.icon(
-                  onPressed: _selected.length == 2 ? _openCompare : null,
-                  icon: const Icon(Icons.compare_arrows),
-                  label: Text(
-                    _selected.length == 2
-                        ? 'Comparar las 2 fotos'
-                        : 'Selecciona 2 fotos (${_selected.length}/2)',
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    FilledButton.icon(
+                      onPressed: _selected.length >= 2 ? _openAnalysis : null,
+                      icon: const Icon(Icons.biotech_outlined),
+                      label: Text(
+                        _selected.length >= 2
+                            ? 'Analizar ${_selected.length} fotos'
+                            : 'Selecciona al menos 2 fotos (${_selected.length})',
+                      ),
+                    ),
+                    if (_selected.length == 2) ...<Widget>[
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: _openCompare,
+                        icon: const Icon(Icons.compare_arrows),
+                        label: const Text('Ver lado a lado / deslizador'),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             )
@@ -180,7 +205,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Toca 2 fotos para compararlas (${_selected.length}/2)',
+                'Toca las fotos que quieras analizar (${_selected.length} seleccionada(s))',
                 style: TextStyle(color: theme.colorScheme.onPrimaryContainer),
               ),
             ),
@@ -196,15 +221,15 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
         children: <Widget>[
           const Expanded(
             child: Text(
-              'Compara dos fotos para ver la evolucion de un lunar o mancha.',
+              'Analiza la evolucion de tus lunares o manchas comparando varias fotos.',
               style: TextStyle(fontSize: 13),
             ),
           ),
           const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: _startCompare,
-            icon: const Icon(Icons.compare_arrows, size: 18),
-            label: const Text('Comparar fotos'),
+            icon: const Icon(Icons.biotech_outlined, size: 18),
+            label: const Text('Comparar / Analizar'),
           ),
         ],
       ),

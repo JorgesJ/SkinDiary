@@ -7,42 +7,44 @@ import 'package:intl/intl.dart';
 import '../models/scan_record.dart';
 import '../services/analysis_service.dart';
 
-/// Analiza dos fotos de la misma zona, marca las manchas/lunares detectados y
-/// compara los resultados. Experimental: es una estimacion, no un diagnostico.
+/// Analiza 2 o mas fotos de la misma zona, marca las manchas/lunares
+/// detectados y muestra la evolucion. Experimental: es una estimacion, no un
+/// diagnostico.
 class AnalysisScreen extends StatefulWidget {
-  const AnalysisScreen({super.key, required this.a, required this.b});
+  const AnalysisScreen({super.key, required this.scans});
 
-  final ScanRecord a; // mas antigua
-  final ScanRecord b; // mas reciente
+  /// Fotos a analizar (se ordenan de la mas antigua a la mas reciente).
+  final List<ScanRecord> scans;
 
   @override
   State<AnalysisScreen> createState() => _AnalysisScreenState();
 }
 
 class _AnalysisScreenState extends State<AnalysisScreen> {
-  ImageAnalysisResult? _resA;
-  ImageAnalysisResult? _resB;
+  late final List<ScanRecord> _ordered;
+  List<ImageAnalysisResult>? _results;
   bool _loading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _ordered = List<ScanRecord>.from(widget.scans)
+      ..sort((ScanRecord a, ScanRecord b) =>
+          a.createdAt.compareTo(b.createdAt));
     _run();
   }
 
   Future<void> _run() async {
     try {
-      final List<ImageAnalysisResult> results = await Future.wait<ImageAnalysisResult>(
-        <Future<ImageAnalysisResult>>[
-          compute(analyzeImageFile, widget.a.filePath),
-          compute(analyzeImageFile, widget.b.filePath),
-        ],
+      final List<ImageAnalysisResult> results =
+          await Future.wait<ImageAnalysisResult>(
+        _ordered.map((ScanRecord s) =>
+            compute(analyzeImageFile, s.filePath)),
       );
       if (!mounted) return;
       setState(() {
-        _resA = results[0];
-        _resB = results[1];
+        _results = results;
         _loading = false;
       });
     } catch (e) {
@@ -64,13 +66,13 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
 
   Widget _buildBody() {
     if (_loading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Analizando imagenes...'),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text('Analizando ${_ordered.length} foto(s)...'),
           ],
         ),
       );
@@ -83,47 +85,42 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
         ),
       );
     }
-    final ImageAnalysisResult a = _resA!;
-    final ImageAnalysisResult b = _resB!;
+    final List<ImageAnalysisResult> results = _results!;
     final DateFormat df = DateFormat('dd/MM/yyyy');
 
     return ListView(
       padding: const EdgeInsets.all(12),
       children: <Widget>[
-        _SummaryCard(a: a, b: b),
+        _TrendCard(scans: _ordered, results: results),
         const SizedBox(height: 12),
         _Disclaimer(),
         const SizedBox(height: 12),
-        _AnalyzedImage(
-          label: 'Antes - ${df.format(widget.a.createdAt)}',
-          path: widget.a.filePath,
-          result: a,
-        ),
-        const SizedBox(height: 16),
-        _AnalyzedImage(
-          label: 'Despues - ${df.format(widget.b.createdAt)}',
-          path: widget.b.filePath,
-          result: b,
-        ),
+        for (int i = 0; i < _ordered.length; i++) ...<Widget>[
+          _AnalyzedImage(
+            label: df.format(_ordered[i].createdAt),
+            path: _ordered[i].filePath,
+            result: results[i],
+          ),
+          const SizedBox(height: 16),
+        ],
       ],
     );
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({required this.a, required this.b});
+class _TrendCard extends StatelessWidget {
+  const _TrendCard({required this.scans, required this.results});
 
-  final ImageAnalysisResult a;
-  final ImageAnalysisResult b;
+  final List<ScanRecord> scans;
+  final List<ImageAnalysisResult> results;
 
   @override
   Widget build(BuildContext context) {
-    final int diff = b.spotCount - a.spotCount;
-    final String diffText = diff == 0
-        ? 'sin cambios en el numero'
-        : (diff > 0 ? '+$diff marca(s)' : '$diff marca(s)');
-    final double pa = a.pigmentRatio * 100;
-    final double pb = b.pigmentRatio * 100;
+    final DateFormat df = DateFormat('dd/MM/yyyy');
+    final int first = results.first.spotCount;
+    final int last = results.last.spotCount;
+    final int diff = last - first;
+    final bool increased = diff > 0;
 
     return Card(
       child: Padding(
@@ -131,18 +128,39 @@ class _SummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text('Resultado', style: Theme.of(context).textTheme.titleMedium),
+            Text('Evolucion (${results.length} fotos)',
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
-            _row(context, 'Marcas detectadas',
-                '${a.spotCount}  ->  ${b.spotCount}   ($diffText)'),
-            const SizedBox(height: 8),
-            _row(context, 'Zona pigmentada',
-                '${pa.toStringAsFixed(2)}%  ->  ${pb.toStringAsFixed(2)}%'),
-            const SizedBox(height: 12),
+            for (int i = 0; i < results.length; i++)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: Text(df.format(scans[i].createdAt)),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text('${results[i].spotCount} marca(s)',
+                          style:
+                              const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        '${(results[i].pigmentRatio * 100).toStringAsFixed(1)}%',
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const Divider(),
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: diff > 0
+                color: increased
                     ? Colors.orange.withValues(alpha: 0.15)
                     : Colors.green.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
@@ -150,16 +168,19 @@ class _SummaryCard extends StatelessWidget {
               child: Row(
                 children: <Widget>[
                   Icon(
-                    diff > 0 ? Icons.warning_amber_rounded : Icons.check_circle,
-                    color: diff > 0 ? Colors.orange[800] : Colors.green[700],
+                    increased
+                        ? Icons.trending_up
+                        : Icons.check_circle_outline,
+                    color: increased ? Colors.orange[800] : Colors.green[700],
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      diff > 0
-                          ? 'Se han detectado mas marcas que en la foto anterior. '
-                              'Revisalo con tu especialista.'
-                          : 'No se aprecian mas marcas que en la foto anterior.',
+                      increased
+                          ? 'De la primera a la ultima foto se detectan '
+                              '$diff marca(s) mas. Revisalo con tu especialista.'
+                          : 'No se aprecia aumento de marcas entre la primera '
+                              'y la ultima foto.',
                     ),
                   ),
                 ],
@@ -168,20 +189,6 @@ class _SummaryCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _row(BuildContext context, String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Expanded(flex: 2, child: Text(label)),
-        Expanded(
-          flex: 3,
-          child: Text(value,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-        ),
-      ],
     );
   }
 }
@@ -197,9 +204,9 @@ class _Disclaimer extends StatelessWidget {
       ),
       child: const Text(
         'Analisis experimental y orientativo. Detecta zonas mas oscuras que la '
-        'piel y las cuenta; el resultado depende mucho de la iluminacion y de '
-        'que ambas fotos esten encuadradas igual. NO es un diagnostico: '
-        'consulta siempre con tu especialista.',
+        'piel y las cuenta; depende mucho de la iluminacion y de que las fotos '
+        'esten encuadradas igual y con fondo liso y oscuro. NO es un '
+        'diagnostico: consulta siempre con tu especialista.',
         style: TextStyle(fontSize: 12),
       ),
     );
@@ -271,6 +278,5 @@ class _SpotsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SpotsPainter oldDelegate) =>
-      oldDelegate.spots != spots;
+  bool shouldRepaint(_SpotsPainter oldDelegate) => oldDelegate.spots != spots;
 }
